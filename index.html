@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cátedras Extraordinarias — Portal de Transparencia UCM</title>
+<meta name="description" content="Relación de Cátedras Extraordinarias de la Universidad Complutense de Madrid. Portal de Transparencia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --rojo: #b71234;
+  --rojo-dark: #8b0d27;
+  --rojo-lite: #f5e6ea;
+  --rojo-pale: #fef7f8;
+  --gris: #3d3d3d;
+  --gris-m: #6b7280;
+  --gris-c: #f3f4f6;
+  --borde: #e5e7eb;
+  --blanco: #ffffff;
+  --radio: 10px;
+  --fn: 'DM Sans', system-ui, sans-serif;
+  --fd: 'DM Serif Display', Georgia, serif;
+  --tr: .2s cubic-bezier(.4,0,.2,1);
+  --sh: 0 8px 32px rgba(0,0,0,.1);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--fn);background:#f0f2f5;color:var(--gris);min-height:100vh;padding:20px;line-height:1.5}
+.container{max-width:1280px;margin:0 auto;background:var(--blanco);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--rojo) 0%,var(--rojo-dark) 100%);color:var(--blanco);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.header-left{display:flex;align-items:center;gap:14px}
+.header-icon{width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:600;line-height:1.25}
+.header h1 span{display:block;font-size:12px;font-weight:400;opacity:.75;margin-top:2px}
+
+/* BANNER REGLAMENTO */
+.reglamento-bar{background:var(--rojo-pale);border-bottom:2px solid var(--rojo-lite);padding:10px 32px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.reglamento-bar .reg-icon{color:var(--rojo);font-size:16px;flex-shrink:0}
+.reglamento-bar p{font-size:13px;color:var(--gris)}
+.reglamento-bar a{color:var(--rojo-dark);font-weight:600;text-decoration:none}
+.reglamento-bar a:hover{text-decoration:underline}
+
+/* CONTROLES */
+.controls-bar{padding:12px 32px;background:var(--blanco);border-bottom:2px solid var(--borde);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ctrl-group{display:flex;flex-direction:column;gap:3px}
+.ctrl-group label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-m)}
+.ctrl-group select{border:2px solid var(--borde);border-radius:8px;padding:8px 32px 8px 12px;font-size:13px;font-family:var(--fn);font-weight:600;background:var(--blanco);color:var(--gris);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23495057' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:150px;transition:all var(--tr)}
+.ctrl-group select:hover,.ctrl-group select:focus{border-color:var(--rojo);outline:none}
+.search-wrap{position:relative;flex:1;min-width:200px;max-width:420px}
+.search-wrap input{width:100%;border:2px solid var(--borde);border-radius:8px;padding:8px 32px 8px 36px;font-size:13px;font-family:var(--fn);color:var(--gris);transition:all var(--tr)}
+.search-wrap input:focus{outline:none;border-color:var(--rojo);box-shadow:0 0 0 3px rgba(183,18,52,.1)}
+.s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gris-m);font-size:14px;pointer-events:none}
+.s-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gris-m);cursor:pointer;font-size:16px;padding:2px 4px;display:none}
+.s-clear.on{display:block}
+.export-group{display:flex;gap:8px;margin-left:auto}
+.export-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;transition:all var(--tr);font-family:var(--fn);color:var(--blanco);white-space:nowrap}
+.export-btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.export-btn.xlsx{background:#1D6F42}
+.export-btn.csv{background:#217346}
+.export-btn svg{width:14px;height:14px;flex-shrink:0}
+
+/* MAIN */
+.main{padding:28px 32px 64px}
+
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+.kpi{background:var(--blanco);border:1px solid var(--borde);border-top:3px solid var(--rojo);border-radius:var(--radio);padding:16px 16px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:box-shadow var(--tr),transform var(--tr)}
+.kpi:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px)}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gris-m);margin-bottom:7px}
+.kpi-val{font-family:var(--fd);font-size:28px;color:var(--rojo);line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:11px;color:var(--gris-m);line-height:1.4}
+
+/* NOTA */
+.nota-tramite{background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #f59e0b;border-radius:8px;padding:10px 16px;margin-bottom:24px;font-size:13px;color:#78350f;display:flex;align-items:flex-start;gap:8px}
+.nota-tramite i{margin-top:1px;flex-shrink:0;color:#f59e0b}
+
+/* SECCIÓN */
+.sec-hdr{margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid var(--rojo-lite);display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sec-hdr h2{font-family:var(--fd);font-size:20px;color:var(--rojo-dark);font-weight:400}
+.sec-meta{font-size:12px;color:var(--gris-m);font-style:italic}
+
+/* TABLA */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radio);border:1px solid var(--borde);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--blanco)}
+thead tr{background:linear-gradient(135deg,var(--rojo) 0%,var(--rojo-dark) 100%);color:var(--blanco)}
+thead th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;cursor:pointer;user-select:none;transition:background var(--tr)}
+thead th:hover{background:rgba(255,255,255,.1)}
+.si::after{content:'⇅';margin-left:4px;opacity:.5;font-size:10px}
+.sa .si::after{content:'▲';opacity:1}
+.sd .si::after{content:'▼';opacity:1}
+tbody tr{border-bottom:1px solid var(--borde);transition:background var(--tr)}
+tbody tr:hover{background:var(--rojo-pale)}
+tbody tr:nth-child(even){background:#fafafa}
+tbody tr:nth-child(even):hover{background:var(--rojo-pale)}
+td{padding:9px 12px;vertical-align:top}
+.tc-nom{min-width:240px;max-width:300px}
+.tc-nom a{color:var(--rojo-dark);text-decoration:none;font-weight:600}
+.tc-nom a:hover{text-decoration:underline}
+.tc-nom .tramite-badge{display:inline-block;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:4px;font-size:10px;font-weight:700;padding:1px 6px;margin-top:4px;white-space:nowrap}
+.tc-centro{white-space:nowrap;font-size:12px;color:var(--gris-m)}
+.tc-entidad{min-width:160px;max-width:220px}
+.tc-dot{text-align:right;white-space:nowrap}
+.badge-eco{display:inline-block;background:#dcfce7;color:#166534;border-radius:5px;padding:1px 7px;font-size:11px;font-weight:600;white-space:nowrap;text-align:right}
+.badge-tramite{display:inline-block;background:#fff3cd;color:#856404;border-radius:5px;padding:1px 7px;font-size:11px;font-weight:600;white-space:nowrap}
+.tc-dir{min-width:140px;font-size:12px}
+.tc-obj{min-width:260px;max-width:380px;font-size:12px;color:var(--gris);line-height:1.45}
+mark{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px}
+
+/* PAGINADOR */
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}
+.pager-info{font-size:13px;color:var(--gris-m)}
+.page-btns{display:flex;gap:4px}
+.pb{width:34px;height:34px;border:1px solid var(--borde);border-radius:7px;background:var(--blanco);color:var(--gris);font-size:13px;font-family:var(--fn);cursor:pointer;transition:all var(--tr);display:flex;align-items:center;justify-content:center}
+.pb:hover{border-color:var(--rojo);color:var(--rojo)}
+.pb.act{background:var(--rojo);color:var(--blanco);border-color:var(--rojo);font-weight:700}
+.pb:disabled{opacity:.4;cursor:not-allowed}
+.pp-sel{border:1px solid var(--borde);border-radius:7px;padding:6px 10px;font-size:13px;font-family:var(--fn);color:var(--gris);background:var(--blanco);cursor:pointer}
+.no-data{text-align:center;padding:48px 24px;color:var(--gris-m);font-size:15px;background:var(--gris-c);border-radius:var(--radio);border:2px dashed var(--borde)}
+
+/* FOOTER */
+.footer{padding:18px 32px;background:#f0f2f5;border-top:1px solid var(--borde);text-align:center;font-size:13px;color:var(--gris-m)}
+.footer a{color:var(--rojo-dark);text-decoration:none;font-weight:600}
+.footer a:hover{text-decoration:underline}
+
+/* ACCESIBILIDAD */
+:focus-visible{outline:3px solid var(--rojo);outline-offset:2px;border-radius:3px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* RESPONSIVE */
+@media(max-width:900px){.kpi-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+  body{padding:8px}
+  .header,.reglamento-bar,.controls-bar,.main{padding-left:16px;padding-right:16px}
+  .header h1{font-size:15px}
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi-val{font-size:22px}
+  table{font-size:12px}
+  td,thead th{padding:7px 8px}
+  .search-wrap{max-width:100%;min-width:0}
+  .export-group{flex-wrap:wrap}
+}
+@media(max-width:400px){.kpi-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="header">
+  <div class="header-left">
+    <div class="header-icon" aria-hidden="true">🎓</div>
+    <h1>Cátedras Extraordinarias
+      <span>Portal de Transparencia · Universidad Complutense de Madrid</span>
+    </h1>
+  </div>
+</header>
+
+<div class="reglamento-bar">
+  <i class="reg-icon fa fa-file-text-o" aria-hidden="true"></i>
+  <p>
+    <strong>Reglamento de Cátedras Extraordinarias UCM:</strong>
+    <a href="https://www.ucm.es/portaldetransparencia/file/rgcatedrasextraordinarias" target="_blank" rel="noopener">
+      Consultar reglamento <i class="fa fa-external-link" aria-hidden="true" style="font-size:10px"></i>
+    </a>
+    &nbsp;·&nbsp;
+    Las cátedras marcadas con <strong>*</strong> están en trámite de creación o renovación a fecha de 5 de marzo de 2026.
+  </p>
+</div>
+
+<div class="controls-bar" role="toolbar" aria-label="Filtros y exportación">
+  <div class="ctrl-group">
+    <label for="sel-centro">Centro UCM</label>
+    <select id="sel-centro" aria-label="Filtrar por centro UCM">
+      <option value="">Todos los centros</option>
+    </select>
+  </div>
+
+  <div class="search-wrap" role="search">
+    <span class="s-icon fa fa-search" aria-hidden="true"></span>
+    <input type="search" id="buscador" placeholder="Buscar por cátedra, entidad u objeto…"
+      aria-label="Buscar cátedras extraordinarias" autocomplete="off">
+    <button class="s-clear" id="btn-clr" aria-label="Limpiar búsqueda">✕</button>
+  </div>
+
+  <div class="export-group">
+    <button class="export-btn xlsx" id="btn-xl" aria-label="Descargar Excel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Excel (.xlsx)
+    </button>
+    <button class="export-btn csv" id="btn-csv" aria-label="Descargar CSV">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      CSV
+    </button>
+  </div>
+</div>
+
+<main class="main" id="area-principal"></main>
+
+<footer class="footer">
+  <p>Datos facilitados por el
+    <a href="https://www.ucm.es/convenios-nacionales" target="_blank" rel="noopener">Servicio de Relaciones Institucionales</a>
+    &nbsp;·&nbsp;
+    <a href="https://www.ucm.es/portaldetransparencia/convenios" target="_blank" rel="noopener">
+      Portal de Transparencia UCM <i class="fa fa-external-link" aria-hidden="true" style="color:var(--rojo);font-size:11px"></i>
+    </a>
+  </p>
+</footer>
+</div>
+
+<script>
+'use strict';
+
+/* ══ DATOS DE CÁTEDRAS EXTRAORDINARIAS ══
+   Formato: [nombre, url, centro, entidad, dotacion, direccion, objeto, enTramite]
+   enTramite: true = marcadas con * en el documento original
+*/
+const CATS = [
+  [
+    "Cátedra Extraordinaria de Educación Médica Fundación Lilly-UCM",
+    "",
+    "F. de Medicina",
+    "Fundación Lilly",
+    "180.000 €",
+    "Pendiente de nombramiento",
+    "Analizar la realidad docente, crear conocimiento en el ámbito de la Educación Médica, transmitirlo y aplicarlo, con especial énfasis en el periodo del Grado.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria Central Lechera Asturiana-UCM de Formación e Investigación en Nutrición y Educación para la Salud",
+    "https://www.ucm.es/catedra-ucm-clas/",
+    "F. de Medicina",
+    "Corporación Alimentaria Peñasanta, S.A. (CAPSA)",
+    "60.000 €",
+    "Luis Collado Yurrita",
+    "El análisis, la investigación y la docencia de la realidad, problemática y perspectivas de las ciencias de la salud desde todos los ámbitos de las mismas y en especial con los aspectos relacionados con la nutrición y su repercusión en la salud.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria STRAUMANN en Investigación Clínica en Implantología",
+    "",
+    "F. de Odontología",
+    "Manohay Dental, S.A. (STRAUMANN)",
+    "105.000 €",
+    "Mariano Sanz Alonso",
+    "Desarrollo y transmisión de conocimientos en el área científica de la Implantología Clínica, sobre todo en sus aspectos de investigación aplicada. En el ámbito de la transferencia, realizará su labor en los niveles de la educación universitaria postgraduada: Máster, Doctorado y Formación Continua.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria Drogas Siglo XXI",
+    "https://www.ucm.es/catedradrogas21/sobre-la-catedra",
+    "F. de Derecho",
+    "Fundación Cultura de Paz",
+    "Sin dotación",
+    "Pendiente de nombramiento",
+    "Investigar, transferir y divulgar en materia de drogas fiscalizadas, con especial énfasis a lo que se refiere al cannabis medicinal y terapéutico.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Bebidas Fermentadas",
+    "http://www.catedrabebferm.es/",
+    "F. de Farmacia",
+    "Asociación de Cerveceros de España",
+    "51.700 €",
+    "Pendiente de nombramiento",
+    "El análisis, la investigación y la docencia de la realidad, problemática y perspectivas de las bebidas fermentadas de bajo o moderado contenido alcohólico y su relación con la salud, dentro del contexto de una alimentación saludable y equilibrada.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria IRSST-UCM: I+D+i Prevención de Riesgos Laborales, Cultura Preventiva y Bienestar Laboral",
+    "",
+    "F. de Psicología",
+    "Instituto Regional de Seguridad y Salud en el Trabajo",
+    "180.000 €",
+    "María del Coral Oliver Hernández",
+    "Plataforma estable de I+D+i en materia de prevención de riesgos laborales, en la que se dé prioridad a la investigación aplicada, a su desarrollo práctico y a la innovación, mediante el apoyo a la formación, la investigación, el desarrollo y la innovación (I+D+i), la divulgación y la promoción de la salud laboral.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Salud Sostenible y Responsable",
+    "",
+    "F. de Comercio y Turismo",
+    "Alianza de la Sanidad Privada Española (ASPE)",
+    "90.000 €",
+    "Miguel Ángel Sastre Castillo",
+    "Generación, difusión y desarrollo de información y proyectos sobre el sector asegurador de salud.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Historia Militar",
+    "https://www.ucm.es/catedra-historia-militar/",
+    "F. de Geografía e Historia",
+    "Ministerio de Defensa (Instituto de Historia y Cultura Militar, IHCM)",
+    "En trámite",
+    "Pendiente de nombramiento",
+    "Desarrollar actividades docentes, académicas e investigadoras relacionadas con la seguridad y la defensa.",
+    true
+  ],
+  [
+    "Cátedra Extraordinaria Dentsply Sirona de investigación en implantología y soluciones digitales en implantología y odontología restauradora",
+    "",
+    "F. de Odontología",
+    "Dentsply Ih AB",
+    "En trámite",
+    "Pendiente de nombramiento",
+    "Desarrollar y transmitir conocimientos en el área de la implantología clínica y la odontología restauradora, sobre todo en sus aspectos de tecnologías digitales, fundamentalmente en las líneas de investigación de las superficies de implantes, comportamiento clínico de distintos protocolos de implantes, evaluación de biomateriales en regeneración ósea y el estudio de distintas soluciones digitales.",
+    true
+  ],
+  [
+    "Cátedra Extraordinaria Klockner de investigación básica y aplicada en implantes dentales",
+    "",
+    "F. de Odontología",
+    "Soadco, S.L.",
+    "105.000 €",
+    "Mariano Sanz Alonso",
+    "Desarrollar y transmitir conocimientos en el área científica de la implantología, tanto en sus aspectos de investigación básica como aplicada.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria UCM-Grupo 5 Contra el Estigma",
+    "https://www.ucm.es/catedracontraelestigma/",
+    "F. de Psicología",
+    "Grupo 5 Acción y Gestión Social, S.A.U.",
+    "90.000 €",
+    "Manuel Muñoz López",
+    "Promover un cambio de mirada hacia las personas que se encuentran en situación de vulnerabilidad (con problemas de salud mental, sin hogar, discapacidad intelectual, mayores, daño cerebral, menores en riesgo de exclusión) y reducir el estigma que sufren a través de estudios de investigación, formación y campañas de sensibilización.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria UCM-FECOMA de Cooperativismo y Economía Social",
+    "",
+    "F. de CC. Económicas y Empresariales",
+    "Federación de Cooperativas y de la Economía Social de Madrid (FECOMA)",
+    "54.000 €",
+    "Paloma Bel Durán / Gustavo Lejarriaga Pérez de las Vacas",
+    "Realización de proyectos de investigación y difusión del concepto de Economía Social, promoviendo el emprendimiento social en su sentido más amplio a través de la realización de diversas actividades.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria UCM-Eductrade en Salud Global y Cooperación Internacional",
+    "",
+    "F. de Medicina",
+    "Eductrade, S.A.",
+    "60.000 €",
+    "Carmelo Loinaz Segurola / Carmen Hernández Pérez",
+    "Creación de un espacio de investigación y conocimiento dedicado a la docencia, investigación y divulgación de la salud global y la cooperación internacional en el ámbito universitario.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria para la Promoción de la Salud y la Responsabilidad Social en la Empresa",
+    "https://www.ucm.es/saludyresponsabilidadsocial/",
+    "F. de Comercio y Turismo",
+    "Cooperativa Farmacéutica Española (COFARES)",
+    "En trámite",
+    "Pendiente de nombramiento",
+    "Desarrollar actividades relacionadas con la promoción de la salud y la responsabilidad social en la empresa, en todos sus ámbitos. Se constituye como un instrumento útil para desarrollar y proyectar esta materia desde el sector de la distribución/industria farmacéutica a la sociedad.",
+    true
+  ],
+  [
+    "Cátedra Extraordinaria UCM-Dräger: Innovación en el cuidado y protección del recién nacido",
+    "",
+    "F. de Medicina",
+    "Dräger Medical Hispania, S.A.U.",
+    "60.000 €",
+    "Manuel Sánchez Luna",
+    "Desarrollar programas de formación y docencia básica y avanzada en la protección del Recién Nacido enfermo, investigación e innovación en la atención del Recién Nacido hospitalizado y promoción de actividades de ámbito Social que den visibilidad a la problemática relacionada con el Recién Nacido prematuro y enfermo y sus familias.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria Desarrollo Turístico Sostenible de San Lorenzo de El Escorial",
+    "",
+    "F. de Comercio y Turismo",
+    "Ayuntamiento de San Lorenzo de El Escorial",
+    "Sin dotación",
+    "María Francisca Blasco López",
+    "Realización de actividades de investigación, formación y divulgación en el ámbito del turismo y desarrollo turístico sostenible de San Lorenzo de El Escorial, que permita generar investigación avanzada en base a la colaboración entre el mundo académico y las Administraciones Públicas.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria DENTAID en Investigación Periodontal",
+    "",
+    "F. de Odontología",
+    "Dentaid, S.L.",
+    "375.000 €",
+    "David Herrera González",
+    "Desarrollo y transmisión de conocimientos en la disciplina de Periodoncia, tanto en sus aspectos de investigación fundamental como en la investigación aplicada.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria ONCE-Tiflotecnología",
+    "https://ccinformacion.ucm.es/directorio/?eid=3404",
+    "F. de Informática",
+    "ONCE (Organización Nacional de Ciegos Españoles)",
+    "60.000 €",
+    "María Guijarro Mata-García",
+    "Fomentar la inclusión mediante la investigación y desarrollo de tecnologías accesibles dentro de la Tiflotecnología.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Estudios Armenios",
+    "",
+    "F. de Geografía e Historia",
+    "Embajada de la República de Armenia (Ministerio de Educación, Ciencia, Cultura y Deporte de la República de Armenia)",
+    "60.000 €",
+    "Adelino Francisco Zurián Hernández",
+    "Estudio, investigación y conocimiento de los estudios armenios, tanto del país Armenia como de su diáspora, de su historia, geografías, sociedades, economía, comercio, industria, turismo, cultura, artes, religión y todos aquellos aspectos que configuran la rica y plural realidad armenia.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Derecho Privado Antonio Rodríguez Adrados",
+    "",
+    "F. de Derecho",
+    "Colegio Notarial de Madrid",
+    "96.000 €",
+    "Luis Anguita Villanueva / Ignacio Solís Villa",
+    "Promoción de actividades docentes y de investigación interdisciplinar vinculadas al Derecho Privado que estudien la realidad, problemática y perspectivas del desarrollo de nuevas estrategias en este ámbito.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Patología de la Mama",
+    "https://www.ucm.es/directorio?eid=3022",
+    "F. de Medicina",
+    "Fundación Tejerina",
+    "140.000 €",
+    "Javier Arias Díaz / Alejandro Tejerina Bernal",
+    "Promoción, desarrollo y difusión de los avances científicos en el ámbito de la patología de la mama, mediante la transferencia de conocimiento y tecnología, tanto en el ámbito nacional como internacional.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Nutrición Clínica Hill's",
+    "https://www.ucm.es/hcv/catedra-extraordinaria-de-nutricion-clinica-hill%C2%B4s",
+    "Hospital Clínico Veterinario Complutense (HCVC)",
+    "Hill's Pet Nutrition España, S.L.",
+    "99.192 € (en trámite)",
+    "Pendiente de nombramiento",
+    "El análisis, la investigación y la docencia de la realidad, problemática y perspectivas de la nutrición clínica desde todos los puntos de vista que se estimen relevantes.",
+    true
+  ],
+  [
+    "Cátedra Extraordinaria Iberia-UCM en transporte aéreo y movilidades globales",
+    "",
+    "F. de Geografía e Historia",
+    "Iberia, L.A.E., S.A. Operadora, Sociedad Unipersonal",
+    "80.000 €",
+    "Roberto Díez Pisonero / Cándida Gago García",
+    "Promover la realización de investigaciones sobre transporte aéreo favoreciendo la transferencia de estos a la sociedad y poniendo en valor el papel socioeconómico que cumplen la compañía, en particular, y el transporte aéreo, en general, en el contexto español.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria en Gestión de la Educación, Ciencia e Innovación",
+    "",
+    "F. de Estudios Estadísticos",
+    "Facultad de Ciencias Económicas de la Universidad de Buenos Aires",
+    "Sin dotación",
+    "María del Rosario Espínola Vílchez / Alberto Edgardo Barbieri",
+    "Establecer un marco de actuación y abordaje que permita contribuir al conocimiento de los procesos y actividades que involucran aspectos clave sobre educación, ciencia, tecnología e innovación.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria BTI Biotechnology Institute de Investigación en Implantología Dental, Terapia Regenerativa y Tratamiento de la Apnea del Sueño y Roncopatía",
+    "",
+    "F. de Odontología",
+    "Comercial BTI Institute España, S.L.",
+    "90.000 €",
+    "Guillermo Jesús Pradies Ramiro",
+    "Desarrollar y transmitir conocimientos en el área científica de la Implantología Clínica y la Odontología Restauradora.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria OnhePres Synlab, Oncohematología de Precisión",
+    "",
+    "F. de Medicina",
+    "Synlab Pathology, S.L.U.",
+    "90.000 €",
+    "Luis Anguita Mandly",
+    "La optimización del manejo multidisciplinar de las enfermedades oncohematológicas y la difusión del conocimiento en relación con los elementos que impactan en la patogénesis y el abordaje diagnóstico terapéutico personalizado.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Derecho Registral",
+    "",
+    "F. de Derecho",
+    "Fundación Registral",
+    "90.000 €",
+    "Juan Sánchez Calero / Juan María Díaz Fraile",
+    "Promoción de actividades docentes y de investigación interdisciplinar vinculada al Derecho Registral que estudien la realidad, problemática y perspectivas del desarrollo de nuevas estrategias en este ámbito.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de la Abogacía",
+    "",
+    "F. de Derecho",
+    "Ilustre Colegio de la Abogacía de Madrid (ICAM)",
+    "120.000 €",
+    "Javier Juste Mencía",
+    "Promoción de actividades docentes y de investigación interdisciplinar vinculada al Derecho, que estudien la realidad, problemática y perspectivas del desarrollo de nuevas estrategias en este ámbito.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria «Ruta 44»",
+    "",
+    "F. de CC. de la Información",
+    "BTOB Marketing, S.L.",
+    "81.000 €",
+    "Patricia Núñez Gómez",
+    "Preparar y abrir las puertas al estudiantado al mundo profesional de la industria publicitaria.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria PRO+TEJER",
+    "",
+    "F. de Educación",
+    "Porticus Iberia, S.L.U. / Fundación Benevolentia",
+    "200.000 €",
+    "María del Rosario González Martín",
+    "Generar y auspiciar investigaciones sobre abusos sexuales, de conciencia y de poder. Principalmente, investigar los procesos y contextos que fomentan los abusos de conciencia y poder en el seno de las comunidades e instituciones de naturaleza trascendente y educativa y generar recursos formativos adecuados.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria Bosch-UCM en Inteligencia Artificial aplicada al Internet de las Cosas",
+    "https://www.ucm.es/catedrabosch/",
+    "F. de Informática",
+    "Robert Bosch España, S.L.U.",
+    "26.400 €",
+    "Juan Antonio Recio García",
+    "Impulsar la investigación y la transferencia tecnológica en el campo de la Inteligencia Artificial aplicada al Internet de las Cosas mediante el desarrollo de soluciones innovadoras que demuestren el potencial de los recursos tecnológicos de Bosch.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria Colegio Oficial de Veterinarios de Madrid",
+    "https://www.ucm.es/hcv/catedra-extraordinaria-del-colegio-de-veterinarios-de-madrid-en-ciencias-veterinarias",
+    "F. de Veterinaria",
+    "Ilustre Colegio Oficial de Veterinarios de Madrid",
+    "22.000 €",
+    "Paloma Forés Jackson",
+    "El análisis, la investigación y la docencia de la realidad, problemática y perspectivas de la veterinaria desde todos los puntos de vista.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria Movilidad Ciclista EMT – UCM",
+    "https://www.ucm.es/tgis/catedra-emt-ucm-movilidad-ciclista/",
+    "F. de Geografía e Historia",
+    "Empresa Municipal de Transportes (EMT)",
+    "120.000 €",
+    "Gustavo Romanillos Arroyo / Juan Carlos García Palomares",
+    "Promoción de investigaciones sobre movilidad ciclista. Favorecer la difusión y conocimiento de las investigaciones realizadas mediante publicaciones y otras acciones de comunicación, como conferencias y jornadas. Fomentar la colaboración, el intercambio de datos y de experiencias investigadoras y de conocimiento entre la UCM y el Ayuntamiento.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria UCM-CBT de investigación en tratamientos de implantes dentales y reconstrucción de tejidos orales",
+    "",
+    "F. de Odontología",
+    "CAMLOG Biotechnologies GmbH (CBT)",
+    "120.000 €",
+    "Mariano Sanz Alonso",
+    "Realizar actividades conjuntas de formación, difusión e investigación, tanto básica como aplicada en implantes dentales y biomateriales de reconstrucción tisular.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria Nutribiótica-UCM de Formación e Investigación en Nutrimicrobiómica",
+    "",
+    "F. de Medicina",
+    "Nutribiótica, S.L.",
+    "90.000 €",
+    "Luis Collado Yurrita",
+    "Desarrollar programas de investigación y formación en Nutrimicrobiómica dirigidos tanto a profesionales del área de Ciencias de la Salud como a la población general, así como la puesta en marcha de Proyectos de Investigación en el área de la microbiótica y la salud.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria sobre Ciberseguridad y Protección de Datos",
+    "",
+    "F. de Comercio y Turismo",
+    "Asociación para el Fomento de la Seguridad de la Información ISMS Forum",
+    "120.000 €",
+    "Pedro López Sáez",
+    "Colaboración para el desarrollo de actividades formativas, de investigación y desarrollo, y de difusión y transferencia del conocimiento en el ámbito de la protección de datos y la seguridad de la información.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Investigación sobre Juego Responsable y su Comunicación",
+    "https://catedraonceucm.com/",
+    "F. de CC. de la Información",
+    "ONCE (Organización Nacional de Ciegos Españoles)",
+    "En trámite",
+    "Pendiente de nombramiento",
+    "Promover la comprensión social del juego responsable y de los problemas y consecuencias vinculados a comportamientos patológicos relacionados con el juego excesivo y de las medidas para evitarlo.",
+    true
+  ],
+  [
+    "Cátedra Extraordinaria Ciencias del Comportamiento y Aplicación Educativa en Autismo y Neurodiversidad",
+    "https://www.ucm.es/catedraedu-cicotea/",
+    "F. de Educación",
+    "Abascool, S.L.",
+    "90.000 €",
+    "Esther Rodríguez Quintana / José Alberto Monseco Gómez",
+    "Fomentar la formación teórica y práctica en ciencias del comportamiento, análisis de conducta aplicado e intervenciones avaladas científicamente, para la evaluación, intervención, orientación, y educación de personas con autismo y neurodiversidad.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de Patología y Medio Ambiente",
+    "https://www.fundacion-alborada.org/catedra-de-patologia-y-medio-ambiente/",
+    "F. de Medicina",
+    "Fundación Alborada / Imhotep Health by Adapta, S.L.",
+    "105.000 €",
+    "Javier del Pino Sans / Pilar Muñoz-Calero Peregrín",
+    "Contribuir a un mejor conocimiento de las enfermedades relacionadas con factores ambientales causados o susceptibles de ser modificados por la acción del hombre.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria de los Mercados Financieros «Fundación Mutua Madrileña»",
+    "",
+    "F. de Derecho",
+    "Fundación Mutua Madrileña (FMM)",
+    "140.000 €",
+    "Javier Megías López / Luis Bermúdez Odriozola",
+    "La promoción de actividades docentes y de investigación interdisciplinar vinculadas, principalmente, al Derecho de los Mercados Financieros (también de los seguros y de las pensiones), que estudien la realidad, problemática y perspectivas del desarrollo de nuevas estrategias en estos ámbitos específicos del Derecho.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria Logística Farmacéutica COFARES",
+    "",
+    "F. de Farmacia",
+    "GRUPO COFARES, Sociedad Cooperativa Farmacéutica Española",
+    "90.000 €",
+    "María Pilar Gómez-Serranillos Cuadrado",
+    "Impulsar la innovación, la investigación y la docencia en aspectos relativos a la logística Farmacéutica y contribuir a la divulgación y promoción de la misma, con la programación de jornadas, conferencias, seminarios, encuentros con investigadores, empresarios y expertos.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria en Estudios Turcos",
+    "",
+    "F. de CC. Políticas y Sociología",
+    "OTEP Konsulting, S.L.",
+    "120.000 €",
+    "José Luis Ayala Rodrigo / Leticia Marta Dorsch Buzón",
+    "Creación de una plataforma académica que fomente el conocimiento e intercambio académico, social y cultural entre España y Turquía.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria en Economía Circular",
+    "",
+    "F. de CC. Químicas",
+    "Consejería de Medio Ambiente, Agricultura e Interior (CM)",
+    "60.000 €",
+    "Pendiente de nombramiento",
+    "Impulsar el conocimiento y la difusión de la economía circular, así como la promoción de actividades docentes, de investigación y divulgación, que estudien la realidad, problemática y perspectivas de la economía circular.",
+    false
+  ],
+  [
+    "Cátedra Extraordinaria en Innovación Docente con Inteligencia Artificial",
+    "",
+    "F. de Informática",
+    "Gestión Educativa Consultores",
+    "99.000 € (en trámite)",
+    "Pendiente de nombramiento",
+    "Estudio del uso de herramientas de Inteligencia Artificial en las actividades de formación, en el ámbito de la docencia universitaria. Conocer cuáles de esas herramientas resultan más adecuadas para su uso en la docencia universitaria, así como sus fortalezas y debilidades.",
+    true
+  ]
+];
+
+/* ══ ESTADO ══ */
+let ST = { q:'', centro:'', scol:0, sdir:'asc', pg:1, pp:25, fd:[] };
+
+/* ══ UTILIDADES ══ */
+const esc = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+
+function hi(txt, q) {
+  if (!q || !txt) return esc(txt);
+  const e = esc(txt);
+  const re = new RegExp('(' + q.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  return e.replace(re, '<mark>$1</mark>');
+}
+
+/* ══ POBLAR FILTRO DE CENTROS ══ */
+function poblarCentros() {
+  const centros = [...new Set(CATS.map(c => c[2]))].sort();
+  const sel = document.getElementById('sel-centro');
+  centros.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+}
+
+/* ══ KPIs ══ */
+function calcKPIs(data) {
+  const total = CATS.length;
+  const activas = CATS.filter(c => !c[7]).length;
+  const tramite = CATS.filter(c => c[7]).length;
+  const conDot = CATS.filter(c => c[4] && c[4] !== 'Sin dotación' && !c[4].toLowerCase().includes('trámite')).length;
+  return { total, activas, tramite, conDot };
+}
+
+/* ══ RENDER ══ */
+const main = document.getElementById('area-principal');
+
+function render() {
+  const q = ST.q.toLowerCase().trim();
+  const centro = ST.centro;
+
+  let datos = CATS.slice();
+
+  if (centro) datos = datos.filter(r => r[2] === centro);
+  if (q) datos = datos.filter(r =>
+    (r[0]&&r[0].toLowerCase().includes(q)) ||
+    (r[2]&&r[2].toLowerCase().includes(q)) ||
+    (r[3]&&r[3].toLowerCase().includes(q)) ||
+    (r[6]&&r[6].toLowerCase().includes(q))
+  );
+
+  const kpi = calcKPIs(CATS);
+
+  let h = '';
+
+  // KPIs
+  h += `<section aria-label="Indicadores">
+    <div class="kpi-grid">
+      <article class="kpi" tabindex="0">
+        <div class="kpi-label">Total cátedras extraordinarias</div>
+        <div class="kpi-val">${kpi.total}</div>
+        <div class="kpi-sub">Registradas en el Portal de Transparencia</div>
+      </article>
+      <article class="kpi" tabindex="0">
+        <div class="kpi-label">Cátedras activas</div>
+        <div class="kpi-val">${kpi.activas}</div>
+        <div class="kpi-sub">Vigentes a fecha de marzo 2026</div>
+      </article>
+      <article class="kpi" tabindex="0">
+        <div class="kpi-label">En trámite</div>
+        <div class="kpi-val">${kpi.tramite}</div>
+        <div class="kpi-sub">Pendientes de creación o renovación</div>
+      </article>
+      <article class="kpi" tabindex="0">
+        <div class="kpi-label">Con dotación económica</div>
+        <div class="kpi-val">${kpi.conDot}</div>
+        <div class="kpi-sub">Cátedras con aportación dineraria</div>
+      </article>
+    </div>
+  </section>`;
+
+  // Nota trámite
+  h += `<div class="nota-tramite">
+    <i class="fa fa-info-circle" aria-hidden="true"></i>
+    <span>Las cátedras marcadas con <strong>(*)</strong> están en trámite de creación o renovación a fecha de <strong>5 de marzo de 2026</strong>.</span>
+  </div>`;
+
+  // Tabla
+  const col = ST.scol, dir = ST.sdir === 'asc' ? 1 : -1;
+  datos.sort((a,b) => {
+    let av = a[col] || '', bv = b[col] || '';
+    return av < bv ? -dir : av > bv ? dir : 0;
+  });
+
+  ST.fd = datos;
+  const tot = datos.length;
+  const pgs = Math.max(1, Math.ceil(tot / ST.pp));
+  if (ST.pg > pgs) ST.pg = pgs;
+  const st0 = (ST.pg-1)*ST.pp;
+  const sl = datos.slice(st0, st0+ST.pp);
+
+  function sc(i) { return ST.scol===i ? (ST.sdir==='asc'?'sa':'sd') : ''; }
+
+  h += `<section aria-labelledby="rel-h">
+    <div class="sec-hdr">
+      <h2 id="rel-h">Relación de Cátedras Extraordinarias</h2>
+      <span class="sec-meta">${tot === CATS.length ? tot+' cátedras' : tot+' resultados de '+CATS.length}</span>
+    </div>`;
+
+  if (tot === 0) {
+    h += `<div class="no-data">📋 <p>No se encontraron cátedras con los filtros aplicados.</p></div>`;
+  } else {
+    h += `<div class="tw" role="region" aria-label="Tabla de Cátedras Extraordinarias" tabindex="0">
+    <table aria-label="Relación de Cátedras Extraordinarias UCM">
+      <thead><tr>
+        <th data-c="0" class="${sc(0)}" tabindex="0" scope="col">Cátedra<span class="si"></span></th>
+        <th data-c="2" class="${sc(2)}" tabindex="0" scope="col">Centro UCM<span class="si"></span></th>
+        <th data-c="3" class="${sc(3)}" tabindex="0" scope="col">Entidad colaboradora<span class="si"></span></th>
+        <th data-c="4" class="${sc(4)}" tabindex="0" scope="col" style="text-align:right">Dotación<span class="si"></span></th>
+        <th data-c="5" class="${sc(5)}" tabindex="0" scope="col">Dirección UCM<span class="si"></span></th>
+        <th data-c="6" class="${sc(6)}" tabindex="0" scope="col">Objeto<span class="si"></span></th>
+      </tr></thead>
+      <tbody>`;
+
+    sl.forEach(r => {
+      const tramite = r[7];
+      const nombre = r[0];
+      const url = r[1];
+      const nombreDisplay = tramite ? `* ${nombre}` : nombre;
+
+      let nombreHtml;
+      if (url) {
+        nombreHtml = `<a href="${esc(url)}" target="_blank" rel="noopener">${hi(nombreDisplay, q)} <i class="fa fa-external-link" style="font-size:10px;opacity:.6" aria-hidden="true"></i></a>`;
+      } else {
+        nombreHtml = hi(nombreDisplay, q);
+      }
+
+      if (tramite) {
+        nombreHtml += `<br><span class="tramite-badge">* En trámite</span>`;
+      }
+
+      let dotBadge = '';
+      if (r[4]) {
+        if (r[4] === 'Sin dotación') {
+          dotBadge = `<span style="font-size:11px;color:var(--gris-m);font-style:italic">Sin dotación</span>`;
+        } else if (r[4].toLowerCase().includes('trámite')) {
+          dotBadge = `<span class="badge-tramite">${esc(r[4])}</span>`;
+        } else {
+          dotBadge = `<span class="badge-eco">${esc(r[4])}</span>`;
+        }
+      }
+
+      h += `<tr>
+        <td class="tc-nom">${nombreHtml}</td>
+        <td class="tc-centro">${hi(r[2], q)}</td>
+        <td class="tc-entidad">${hi(r[3], q)}</td>
+        <td class="tc-dot">${dotBadge}</td>
+        <td class="tc-dir">${esc(r[5])}</td>
+        <td class="tc-obj">${hi(r[6], q)}</td>
+      </tr>`;
+    });
+
+    h += `</tbody></table></div>`;
+
+    // Paginador
+    const maxB = 7;
+    let s0 = Math.max(1, ST.pg - Math.floor(maxB/2));
+    let e0 = Math.min(pgs, s0 + maxB - 1);
+    if (e0-s0 < maxB-1) s0 = Math.max(1, e0-maxB+1);
+
+    h += `<div class="pager">
+      <div class="pager-info">Mostrando ${st0+1}–${Math.min(st0+ST.pp,tot)} de ${tot} cátedras</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label for="pp-sel" style="font-size:12px;color:var(--gris-m)">Por página:</label>
+        <select class="pp-sel" id="pp-sel" aria-label="Registros por página">
+          ${[10,25,50].map(n=>`<option value="${n}"${ST.pp===n?' selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>
+      <div class="page-btns" role="navigation" aria-label="Paginación">
+        <button class="pb" data-p="prev" ${ST.pg===1?'disabled':''} aria-label="Anterior">‹</button>`;
+    if (s0>1) h+=`<button class="pb" data-p="1">1</button><span style="padding:0 4px;color:var(--gris-m)">…</span>`;
+    for(let p=s0;p<=e0;p++) h+=`<button class="pb${p===ST.pg?' act':''}" data-p="${p}" ${p===ST.pg?'aria-current="page"':''}>${p}</button>`;
+    if (e0<pgs) h+=`<span style="padding:0 4px;color:var(--gris-m)">…</span><button class="pb" data-p="${pgs}">${pgs}</button>`;
+    h += `<button class="pb" data-p="next" ${ST.pg===pgs?'disabled':''} aria-label="Siguiente">›</button>
+      </div></div>`;
+  }
+
+  h += `</section>`;
+  main.innerHTML = h;
+  bind();
+}
+
+/* ══ BIND ══ */
+function bind() {
+  document.querySelectorAll('thead th[data-c]').forEach(th => {
+    const go = () => {
+      const c = +th.dataset.c;
+      ST.scol===c ? ST.sdir=(ST.sdir==='asc'?'desc':'asc') : (ST.scol=c, ST.sdir='asc');
+      ST.pg=1; render();
+    };
+    th.onclick = go;
+    th.onkeydown = e => (e.key==='Enter'||e.key===' ') && (e.preventDefault(), go());
+  });
+  document.querySelectorAll('.pb').forEach(b => {
+    b.onclick = () => {
+      const p = b.dataset.p;
+      if(p==='prev') ST.pg=Math.max(1,ST.pg-1);
+      else if(p==='next') ST.pg=Math.min(Math.ceil(ST.fd.length/ST.pp),ST.pg+1);
+      else ST.pg=+p;
+      render();
+      main.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  });
+  const pp = document.getElementById('pp-sel');
+  if(pp) pp.onchange = e => { ST.pp=+e.target.value; ST.pg=1; render(); };
+}
+
+/* ══ EXPORTACIÓN ══ */
+function buildRows() {
+  const datos = ST.q || ST.centro ? ST.fd : CATS;
+  const rows = [
+    ['Universidad Complutense de Madrid — Cátedras Extraordinarias'],
+    ['Fuente: Portal de Transparencia UCM · Servicio de Relaciones Institucionales'],
+    ['Datos a marzo de 2026. (*) En trámite de creación o renovación'],
+    [],
+    ['Cátedra','URL','Centro UCM','Entidad colaboradora','Dotación económica','Dirección UCM','Objeto','En trámite'],
+  ];
+  datos.forEach(r => rows.push([
+    r[7] ? '* '+r[0] : r[0],
+    r[1]||'',
+    r[2],
+    r[3],
+    r[4]||'',
+    r[5]||'',
+    r[6]||'',
+    r[7] ? 'Sí' : 'No'
+  ]));
+  return rows;
+}
+
+document.getElementById('btn-xl').onclick = () => {
+  const ws = XLSX.utils.aoa_to_sheet(buildRows());
+  ws['!merges'] = [
+    {s:{r:0,c:0},e:{r:0,c:7}},
+    {s:{r:1,c:0},e:{r:1,c:7}},
+    {s:{r:2,c:0},e:{r:2,c:7}}
+  ];
+  ws['!cols'] = [{wch:50},{wch:40},{wch:30},{wch:40},{wch:18},{wch:30},{wch:70},{wch:10}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Cátedras Extraordinarias');
+  XLSX.writeFile(wb, 'UCM_Catedras_Extraordinarias.xlsx');
+};
+
+document.getElementById('btn-csv').onclick = () => {
+  const rows = buildRows();
+  const csv = 'sep=;\r\n' + rows.map(r =>
+    r.map(c=>{const s=c==null?'':String(c);return s.includes(';')||s.includes('"')?`"${s.replace(/"/g,'""')}"`:s;}).join(';')
+  ).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download = 'UCM_Catedras_Extraordinarias.csv';
+  a.click();
+};
+
+/* ══ CONTROLES ══ */
+document.getElementById('sel-centro').onchange = e => {
+  ST.centro = e.target.value; ST.pg=1; render();
+};
+
+let dbt;
+document.getElementById('buscador').oninput = e => {
+  clearTimeout(dbt);
+  dbt = setTimeout(()=>{
+    ST.q = e.target.value; ST.pg=1;
+    document.getElementById('btn-clr').classList.toggle('on', !!e.target.value);
+    render();
+  }, 200);
+};
+
+document.getElementById('btn-clr').onclick = () => {
+  document.getElementById('buscador').value='';
+  ST.q=''; ST.pg=1;
+  document.getElementById('btn-clr').classList.remove('on');
+  render();
+  document.getElementById('buscador').focus();
+};
+
+/* ══ INICIO ══ */
+poblarCentros();
+render();
+</script>
+</body>
+</html>
