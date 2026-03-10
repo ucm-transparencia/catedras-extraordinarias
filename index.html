@@ -217,14 +217,60 @@ mark{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px}
       Portal de Transparencia UCM <i class="fa fa-external-link" aria-hidden="true" style="color:var(--rojo);font-size:11px"></i>
     </a>
   </p>
-</footer>
-</div>
-  <!-- BACK TO TOP -->
+<!-- BACK TO TOP -->
 <button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Volver al inicio">↑</button>
 
-
 <script>
-'use strict';
+// ── Toggle sections ─────────────────────────────────────────
+function toggle(hdr) {
+  const section = hdr.closest('.section');
+  const isOpen  = section.classList.contains('open');
+  section.classList.toggle('open', !isOpen);
+  hdr.setAttribute('aria-expanded', !isOpen);
+}
+
+// ── Active nav on scroll ─────────────────────────────────────
+const sections = document.querySelectorAll('.section[id]');
+const navLinks  = document.querySelectorAll('.nav-list a[href^="#"]');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { threshold: 0.25, rootMargin: '-60px 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// ── Back to top ───────────────────────────────────────────────
+const backTop = document.getElementById('backTop');
+window.addEventListener('scroll', () => {
+  backTop.classList.toggle('visible', window.scrollY > 300);
+});
+
+// ── Auto-open section on hash navigation ─────────────────────
+function openFromHash() {
+  const id = location.hash.replace('#','');
+  if (!id) return;
+  const target = document.getElementById(id);
+  if (!target) return;
+  const section = target.closest('.section') || target;
+  if (section.classList.contains('section')) {
+    section.classList.add('open');
+    section.querySelector('.section-hdr')?.setAttribute('aria-expanded','true');
+    setTimeout(() => target.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+  }
+}
+window.addEventListener('hashchange', openFromHash);
+openFromHash();
+</script>
+
+</body>
+</html>
 
 /* ══ DATOS DE CÁTEDRAS EXTRAORDINARIAS ══
    Formato: [nombre, url, centro, entidad, dotacion, direccion, objeto, enTramite]
