@@ -123,9 +123,13 @@ mark{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px}
 .no-data{text-align:center;padding:48px 24px;color:var(--gris-m);font-size:15px;background:var(--gris-c);border-radius:var(--radio);border:2px dashed var(--borde)}
 
 /* FOOTER */
-.footer{padding:18px 32px;background:#f0f2f5;border-top:1px solid var(--borde);text-align:center;font-size:13px;color:var(--gris-m)}
+.footer{padding:18px 32px;background:#f0f2f5;border-top:1px solid var(--borde);text-align:center;font-size:13px;color:var(--gris-m);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.footer-links{flex:1;text-align:center}
 .footer a{color:var(--rojo-dark);text-decoration:none;font-weight:600}
 .footer a:hover{text-decoration:underline}
+.btn-top{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:var(--rojo);color:var(--blanco);border:none;border-radius:50%;cursor:pointer;transition:all var(--tr);flex-shrink:0}
+.btn-top:hover{background:var(--rojo-dark);transform:translateY(-3px);box-shadow:0 6px 18px rgba(183,18,52,.4)}
+.btn-top svg{width:18px;height:18px}
 
 /* ACCESIBILIDAD */
 :focus-visible{outline:3px solid var(--rojo);outline-offset:2px;border-radius:3px}
@@ -143,6 +147,8 @@ mark{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px}
   td,thead th{padding:7px 8px}
   .search-wrap{max-width:100%;min-width:0}
   .export-group{flex-wrap:wrap}
+  .footer{flex-direction:column;text-align:center;padding:16px}
+  .footer-links{text-align:center}
 }
 @media(max-width:400px){.kpi-grid{grid-template-columns:1fr}}
 </style>
@@ -210,67 +216,25 @@ mark{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px}
 <main class="main" id="area-principal"></main>
 
 <footer class="footer">
-  <p>Datos facilitados por el
-    <a href="https://www.ucm.es/convenios-nacionales" target="_blank" rel="noopener">Servicio de Relaciones Institucionales</a>
-    &nbsp;·&nbsp;
-    <a href="https://www.ucm.es/portaldetransparencia" target="_blank" rel="noopener">
-      Portal de Transparencia UCM <i class="fa fa-external-link" aria-hidden="true" style="color:var(--rojo);font-size:11px"></i>
-    </a>
-  </p>
-<!-- BACK TO TOP -->
-<button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Volver al inicio">↑</button>
+  <div class="footer-links">
+    <p>Datos facilitados por el
+      <a href="https://www.ucm.es/convenios-nacionales" target="_blank" rel="noopener">Servicio de Relaciones Institucionales</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.ucm.es/portaldetransparencia/convenios" target="_blank" rel="noopener">
+        Portal de Transparencia UCM <i class="fa fa-external-link" aria-hidden="true" style="color:var(--rojo);font-size:11px"></i>
+      </a>
+    </p>
+  </div>
+  <button class="btn-top" id="btn-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Volver al inicio de la página">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+</footer>
+</div>
 
 <script>
-// ── Toggle sections ─────────────────────────────────────────
-function toggle(hdr) {
-  const section = hdr.closest('.section');
-  const isOpen  = section.classList.contains('open');
-  section.classList.toggle('open', !isOpen);
-  hdr.setAttribute('aria-expanded', !isOpen);
-}
-
-// ── Active nav on scroll ─────────────────────────────────────
-const sections = document.querySelectorAll('.section[id]');
-const navLinks  = document.querySelectorAll('.nav-list a[href^="#"]');
-
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navLinks.forEach(a => {
-        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
-      });
-    }
-  });
-}, { threshold: 0.25, rootMargin: '-60px 0px -60% 0px' });
-
-sections.forEach(s => observer.observe(s));
-
-// ── Back to top ───────────────────────────────────────────────
-const backTop = document.getElementById('backTop');
-window.addEventListener('scroll', () => {
-  backTop.classList.toggle('visible', window.scrollY > 300);
-});
-
-// ── Auto-open section on hash navigation ─────────────────────
-function openFromHash() {
-  const id = location.hash.replace('#','');
-  if (!id) return;
-  const target = document.getElementById(id);
-  if (!target) return;
-  const section = target.closest('.section') || target;
-  if (section.classList.contains('section')) {
-    section.classList.add('open');
-    section.querySelector('.section-hdr')?.setAttribute('aria-expanded','true');
-    setTimeout(() => target.scrollIntoView({behavior:'smooth', block:'start'}), 100);
-  }
-}
-window.addEventListener('hashchange', openFromHash);
-openFromHash();
-</script>
-
-</body>
-</html>
+'use strict';
 
 /* ══ DATOS DE CÁTEDRAS EXTRAORDINARIAS ══
    Formato: [nombre, url, centro, entidad, dotacion, direccion, objeto, enTramite]
